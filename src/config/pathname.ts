@@ -1,5 +1,5 @@
 export const pathname = {
-  home: () => {
+  login: () => {
     return `/`;
   },
 };

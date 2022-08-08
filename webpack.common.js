@@ -1,4 +1,7 @@
 const path = require("path");
+const CaseSensitivePathsPlugin = require("case-sensitive-paths-webpack-plugin");
+const WriteFilePlugin = require("write-file-webpack-plugin");
+const CopyPlugin = require("copy-webpack-plugin");
 
 module.exports = {
   entry: "./index.tsx", // Dẫn tới file index.js ta đã tạo
@@ -19,11 +22,16 @@ module.exports = {
         use: ["style-loader", "css-loader"]
       },
       {
-        test: /\.(png|jpe?g|gif)$/i, //using file-loader images .png, .jpg, .jpeg, .gif
-        loader: 'file-loader',
+        test: /\.(png|jpeg|jpg|gif|tiff|ai|psd|pdf|eps|heic|raw|svg)$/i, //using file-loader and url loader images
+        loader: "file-loader",
         options: {
           name: 'public/assets/images/[name].[ext]', //gom image vao dist/public/assets/images
         },
+      },
+      {
+        test: /\.svg$/i,
+        issuer: /\.[jt]sx?$/,
+        use: ['@svgr/webpack', 'url-loader'],
       },
     ]
   },
@@ -34,5 +42,25 @@ module.exports = {
       "@public": path.resolve(__dirname, "public"),
     },
     extensions: [".ts", ".tsx", ".html", ".js"] // tắt import example.ts => example
-  }
+  },
+  plugins: [
+    new CaseSensitivePathsPlugin(),  //require import chu hoa vs thuong
+    new CopyPlugin({
+      patterns: [
+        {
+          //copy directory public/assets ==> build/public/assets
+          from: path.resolve('public/assets'),
+          to: path.resolve('build/public/assets'),
+          toType: 'dir',
+        },
+      ],
+    }),
+    new WriteFilePlugin(
+      {
+        // Write files that have ".ts,.tsx,.js,.css" extension.
+        test: /\.(ts|tsx|js|css)$/,
+        useHashIndex: true
+      }
+    ),
+  ]
 };
